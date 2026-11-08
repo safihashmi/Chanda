@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chanda Manager — Majlis Khuddamul Ahmadiyah Malaysia</title>
+<style>
+  :root{
+    --primary:#0d5c4d; --primary-dark:#084238; --accent:#c89b3c; --accent-light:#f5e9c8;
+    --bg:#f4f6f5; --card:#ffffff; --text:#1f2933; --muted:#6b7280; --border:#e2e8e4;
+    --danger:#b42318; --success:#067647; --chip:#e6f0ec;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  header{background:linear-gradient(135deg,var(--primary-dark),var(--primary));color:#fff;padding:18px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  header .logo{width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--primary);font-size:13px;text-align:center;line-height:1.1;flex-shrink:0}
+  header h1{font-size:20px;font-weight:700}
+  header p{font-size:12px;opacity:.85;margin-top:2px}
+  header .save-state{margin-left:auto;font-size:12px;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:20px}
+  nav{background:#fff;border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:4px;overflow-x:auto;position:sticky;top:0;z-index:50;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  nav button{background:none;border:none;padding:14px 16px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:.15s;font-family:inherit}
+  nav button:hover{color:var(--primary)}
+  nav button.active{color:var(--primary);border-bottom-color:var(--accent)}
+  main{max-width:1200px;margin:0 auto;padding:24px 20px 60px}
+  .tab{display:none;animation:fade .25s ease}
+  .tab.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .card h2{font-size:17px;color:var(--primary);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .card h2::before{content:"";width:4px;height:18px;background:var(--accent);border-radius:2px;flex-shrink:0}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+  input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:#fafcfb;transition:.15s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(13,92,77,.12)}
+  input[readonly]{background:#eef3f1;color:#374f49;border-color:#d4e0db}
+  .hint{font-size:11px;color:var(--muted);margin-top:4px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit;text-decoration:none}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(13,92,77,.3)}
+  .btn-accent{background:var(--accent);color:#3a2a05}
+  .btn-accent:hover{background:#b58a2e}
+  .btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary)}
+  .btn-outline:hover{background:var(--chip)}
+  .btn-danger{background:#fff;color:var(--danger);border:1.5px solid var(--danger)}
+  .btn-danger:hover{background:#fef3f2}
+  .btn-sm{padding:6px 12px;font-size:12px}
+  .fund-row{display:grid;grid-template-columns:1fr 140px;gap:12px;align-items:center;padding:10px 14px;background:#fafcfb;border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
+  .fund-row span{font-size:14px;font-weight:600}
+  .total-box{background:var(--primary);color:#fff;border-radius:10px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:10px}
+  .total-box .lbl{font-size:13px;opacity:.85;text-transform:uppercase;letter-spacing:.5px}
+  .total-box .val{font-size:28px;font-weight:800}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px}
+  .stat{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden}
+  .stat::after{content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent)}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+  .stat .v{font-size:24px;font-weight:800;color:var(--primary);margin-top:6px;word-break:break-word}
+  .stat .sub{font-size:11px;color:var(--muted);margin-top:2px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:var(--primary);color:#fff;padding:10px 12px;text-align:left;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px;position:sticky;top:0;white-space:nowrap}
+  td{padding:9px 12px;border-bottom:1px solid var(--border)}
+  tr:hover td{background:#f7faf8}
+  .table-wrap{overflow-x:auto;max-height:480px;overflow-y:auto;border:1px solid var(--border);border-radius:10px}
+  .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
+  .b-cash{background:#e6f4ea;color:#067647}
+  .b-online{background:#e0eff9;color:#0761a8}
+  .b-cheque{background:#fdf0d5;color:#92600a}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--primary-dark);color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:.3s;z-index:200;max-width:90vw;text-align:center}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .toast.err{background:var(--danger)}
+  .month-chips{display:flex;flex-wrap:wrap;gap:6px}
+  .month-chips label{display:inline-flex;align-items:center;gap:5px;background:var(--chip);padding:7px 12px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:600;color:var(--primary);text-transform:none;letter-spacing:0;margin:0;border:1.5px solid transparent}
+  .month-chips input{display:none;width:auto}
+  .month-chips input:checked + span{font-weight:800}
+  .month-chips label:has(input:checked){background:var(--accent-light);border-color:var(--accent)}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+  .empty .big{font-size:40px;margin-bottom:10px;opacity:.4}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}
+  .bar-row .name{width:170px;flex-shrink:0;font-weight:600;font-size:12px}
+  .bar-row .track{flex:1;background:#eef1ef;border-radius:6px;height:22px;position:relative;overflow:hidden;min-width:60px}
+  .bar-row .fill{height:100%;background:linear-gradient(90deg,var(--primary),#1a8a73);border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:11px;font-weight:700;min-width:40px;transition:width .6s ease}
+  .bar-row .amt{width:90px;text-align:right;font-weight:700;font-size:13px;flex-shrink:0}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+  .section-note{background:var(--accent-light);border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;margin-bottom:16px;line-height:1.6}
+  .member-card{background:#f7faf8;border:1px solid #d4e0db;border-radius:10px;padding:14px 18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  .member-card .nm{font-weight:700;font-size:15px}
+  .member-card .det{font-size:12px;color:var(--muted);margin-top:3px}
+  .host-step{display:flex;gap:16px;margin-bottom:20px;align-items:flex-start}
+  .host-step .num{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0}
+  .host-step .txt h3{font-size:15px;color:var(--primary);margin-bottom:4px}
+  .host-step .txt p{font-size:13.5px;color:#444;line-height:1.6}
+  .host-step .txt code{background:#eef1ef;padding:2px 8px;border-radius:4px;font-size:12.5px}
+  @media print{header,nav,.no-print{display:none!important}main{max-width:100%;padding:0}.card{border:none;box-shadow:none;padding:0}}
+  @media(max-width:600px){.bar-row .name{width:110px;font-size:11px}.bar-row .amt{width:70px;font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">MKAM<br>Chanda</div>
+  <div>
+    <h1>Chanda Manager — Web Edition</h1>
+    <p>Majlis Khuddamul Ahmadiyah Malaysia · Atfal &amp; Khuddam fund collection</p>
+  </div>
+  <div class="save-state" id="saveState">Loading...</div>
+</header>
+
+<nav id="nav">
+  <button data-tab="dashboard" class="active">Dashboard</button>
+  <button data-tab="register">Register Member</button>
+  <button data-tab="members">Members List</button>
+  <button data-tab="enter">Enter Chanda</button>
+  <button data-tab="search">Search &amp; Reports</button>
+  <button data-tab="backup">Backup / Export</button>
+  <button data-tab="host">Put Online</button>
+</nav>
+
+<main>
+
+<!-- ============ DASHBOARD ============ -->
+<section class="tab active" id="tab-dashboard">
+  <div class="stat-grid" id="statGrid"></div>
+  <div class="card">
+    <h2>Collection by Fund Type</h2>
+    <div id="fundBars"></div>
+    <div class="actions no-print" id="demoActions">
+      <button class="btn btn-accent btn-sm" id="loadDemo">Load Sample Data (to see how it works)</button>
+      <span class="hint">Sample data can be erased anytime in Backup tab.</span>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h2>Collection by Month</h2>
+      <div id="monthBars"></div>
+    </div>
+    <div class="card">
+      <h2>Recent Receipts (last 8)</h2>
+      <div class="table-wrap"><table><thead><tr><th>Receipt</th><th>Date</th><th>Name</th><th>Method</th><th>Total</th></tr></thead><tbody id="recentBody"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REGISTER MEMBER ============ -->
+<section class="tab" id="tab-register">
+  <div class="card">
+    <h2>Register a New Member</h2>
+    <div class="section-note">Register every member <b>before</b> entering their chanda. People without a member code use the reserved code <b>999</b> (already created) — you do not need to register them; just write their real name when entering chanda.</div>
+    <form id="memberForm" class="grid g3">
+      <div><label>Member Code / AIMS No *</label><input id="m_code" required inputmode="numeric" placeholder="e.g. 4361"><div class="hint">Numbers only. Use 999 for non-members.</div></div>
+      <div><label>Full Name *</label><input id="m_name" required placeholder="e.g. Safeer Ahmad"></div>
+      <div><label>Branch *</label><input id="m_branch" required placeholder="e.g. Kelang, Gombak..."></div>
+      <div><label>Category *</label><select id="m_cat" required><option value="">Select...</option><option>Atfal (5-14)</option><option>Khuddam (14-40)</option></select></div>
+      <div><label>Wassiyat No</label><input id="m_was" placeholder="if any"></div>
+      <div><label>Phone</label><input id="m_phone" placeholder="optional"></div>
+      <div style="grid-column:1/-1"><label>Notes</label><input id="m_notes" placeholder="optional"></div>
+      <div class="actions" style="grid-column:1/-1">
+        <button type="submit" class="btn btn-primary">Save Member</button>
+        <button type="reset" class="btn btn-outline">Clear</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ MEMBERS LIST ============ -->
+<section class="tab" id="tab-members">
+  <div class="card">
+    <h2>Registered Members</h2>
+    <div class="grid g3" style="margin-bottom:14px">
+      <div><label>Search</label><input id="memSearch" placeholder="by name, code or branch..."></div>
+    </div>
+    <div id="memberList"></div>
+  </div>
+</section>
+
+<!-- ============ ENTER CHANDA ============ -->
+<section class="tab" id="tab-enter">
+  <div class="card">
+    <h2>New Chanda Receipt Entry</h2>
+    <form id="chandaForm">
+      <div class="grid g3" style="margin-bottom:16px">
+        <div><label>Receipt No *</label><input id="c_rcpt" required placeholder="e.g. 08660"></div>
+        <div><label>Date of Collection *</label><input id="c_date" type="date" required></div>
+        <div><label>Year *</label><input id="c_year" type="number" required></div>
+        <div><label>Member Code *</label><input id="c_code" required inputmode="numeric" placeholder="type code & press Tab" autocomplete="off">
+          <div class="hint" id="codeHint">Use 999 if no code yet</div></div>
+        <div><label>Name (auto)</label><input id="c_name" readonly placeholder="auto-filled">
+          <div id="c_name_override_wrap" style="display:none;margin-top:6px"><label style="color:#b42318;text-transform:none;letter-spacing:0">Real payer name (required for 999)</label><input id="c_name_override" placeholder="type actual name here"></div></div>
+        <div><label>Branch (auto)</label><input id="c_branch" readonly></div>
+        <div><label>Category (auto)</label><input id="c_cat" readonly></div>
+        <div><label>Wassiyat No</label><input id="c_was" placeholder="optional"></div>
+      </div>
+
+      <label style="margin-bottom:8px">For the month of (tick all that apply):</label>
+      <div class="month-chips" id="monthChips"></div>
+
+      <div style="margin-top:18px">
+        <label style="margin-bottom:8px">Amounts per fund type (RM) — leave blank if not paid:</label>
+        <div id="fundInputs"></div>
+      </div>
+
+      <div class="grid g3" style="margin-top:16px">
+        <div><label>Payment Method *</label><select id="c_pay" required><option value="">Select...</option><option>Cash</option><option>Online Transfer</option><option>Cheque</option></select></div>
+        <div><label>Entered By</label><input id="c_by" placeholder="your name"></div>
+        <div><label>Remarks</label><input id="c_rem" placeholder="optional"></div>
+      </div>
+
+      <div class="total-box"><div><div class="lbl">Receipt Total</div><div class="hint" style="color:#fff;opacity:.8" id="payMethodEcho"></div></div><div class="val" id="c_total">RM 0.00</div></div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">Save Receipt</button>
+        <button type="button" class="btn btn-outline" id="resetChanda">Clear Form</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ SEARCH & REPORTS ============ -->
+<section class="tab" id="tab-search">
+  <div class="card">
+    <h2>Search Receipts</h2>
+    <div class="grid g3">
+      <div><label>Name / Code / Branch</label><input id="s_q" placeholder="search..."></div>
+      <div><label>Month</label><select id="s_month"><option value="">All</option></select></div>
+      <div><label>Year</label><select id="s_year"><option value="">All</option></select></div>
+      <div><label>Payment Method</label><select id="s_pay"><option value="">All</option><option>Cash</option><option>Online Transfer</option><option>Cheque</option></select></div>
+      <div><label>From Date</label><input id="s_from" type="date"></div>
+      <div><label>To Date</label><input id="s_to" type="date"></div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="s_run">Search</button>
+      <button class="btn btn-outline" id="s_clear">Reset</button>
+      <button class="btn btn-accent" id="s_csv">Export Results to CSV (Excel)</button>
+      <span id="s_count" style="font-size:13px;color:var(--muted);font-weight:600"></span>
+    </div>
+    <div class="table-wrap" style="margin-top:16px"><table id="s_table"><thead><tr>
+      <th>Receipt</th><th>Date</th><th>Month</th><th>Year</th><th>Code</th><th>Name</th><th>Branch</th><th>Funds</th><th>Total</th><th>Method</th><th></th>
+    </tr></thead><tbody id="s_body"></tbody></table></div>
+  </div>
+
+  <div class="card">
+    <h2>Member Yearly Statement</h2>
+    <div class="section-note">Enter a member code (or 999) to see exactly how much they paid, when, and per fund — exactly what members ask for. Print or save as PDF to hand to them.</div>
+    <div class="grid g3">
+      <div><label>Member Code *</label><input id="st_code" inputmode="numeric" placeholder="e.g. 4361 or 999"></div>
+      <div><label>Year</label><input id="st_year" type="number" placeholder="leave blank = all years"></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn btn-primary" id="st_run" style="width:100%">Generate Statement</button></div>
+    </div>
+    <div id="st_result" style="margin-top:18px"></div>
+  </div>
+</section>
+
+<!-- ============ BACKUP ============ -->
+<section class="tab" id="tab-backup">
+  <div class="card">
+    <h2>Backup &amp; Transfer Your Data</h2>
+    <div class="section-note">All data is stored <b>in this browser on this device</b> (works fully offline once the page is loaded). Export a backup file regularly and keep it safe. You can open this same site on another computer/phone and import the backup.</div>
+    <div class="actions">
+      <button class="btn btn-primary" id="bk_export">Download Backup (.json)</button>
+      <button class="btn btn-accent" id="bk_csv_all">Export ALL Receipts to CSV (Excel)</button>
+      <label class="btn btn-outline" style="cursor:pointer">Import Backup (.json)<input type="file" id="bk_import" accept=".json,application/json" style="display:none"></label>
+      <button class="btn btn-danger" id="bk_clear">Erase ALL Data</button>
+    </div>
+    <div class="hint" style="margin-top:14px">CSV files open directly in Microsoft Excel, Google Sheets and WPS. JSON backup contains everything and can be restored on any device.</div>
+  </div>
+</section>
+
+<!-- ============ PUT ONLINE ============ -->
+<section class="tab" id="tab-host">
+  <div class="card">
+    <h2>Put This Site Online — Free, in 60 Seconds</h2>
+    <div class="section-note">This file <b>is</b> a complete website. To get a shareable web address (URL), use one of these free drag-and-drop hosts. No coding, no server needed.</div>
+
+    <div class="host-step"><div class="num">1</div><div class="txt">
+      <h3>Save this file as <code>index.html</code></h3>
+      <p>Right-click this page → <b>Save As</b> → save with filename <code>index.html</code> (must be exactly that). Or download it from where you got it.</p>
+    </div></div>
+
+    <div class="host-step"><div class="num">2</div><div class="txt">
+      <h3>EASIEST: Netlify Drop (no account needed)</h3>
+      <p>Go to <code>app.netlify.com/drop</code> — drag the <code>index.html</code> file onto the page. You instantly get a live URL like <code>https://random-name.netlify.app</code>. Bookmark it. Optional: create a free account to keep it permanently and rename it.</p>
+    </div></div>
+
+    <div class="host-step"><div class="num">3</div><div class="txt">
+      <h3>ALTERNATIVE: GitHub Pages (more permanent)</h3>
+      <p>Create a free account at <code>github.com</code> → New Repository → name it <code>chanda</code> → upload <code>index.html</code> → Settings → Pages → Deploy from branch. Your site: <code>https://yourname.github.io/chanda/</code></p>
+    </div></div>
+
+    <div class="host-step"><div class="num">4</div><div class="txt">
+      <h3>Share the link with your team</h3>
+      <p>Anyone with the URL can open it on phone or computer. Each person's data stays on their own device — use <b>Backup → Export CSV</b> to combine records, or nominate one person as the data keeper.</p>
+    </div></div>
+
+    <div class="section-note" style="margin-top:20px"><b>Tip:</b> Once you've opened the site once on your phone, use <b>Add to Home Screen</b> (in browser menu) — it becomes an app icon you can tap like any app, and it works offline.</div>
+  </div>
+</section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+/* ================= DATA LAYER ================= */
+var FUND_TYPES = ["Khuddam Membership","Khuddam Hall","Ijtima Tanzeem","Atfal Membership","Local Fund","Khidmat-e-Khalaq"];
+var MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+var K_MEM="mkam_members", K_CHA="mkam_chanda", K_RCPT="mkam_last_rcpt";
+
+function defaultMembers(){
+  return [{code:"999", name:"NON-MEMBER / NO CODE YET", branch:"(any)", cat:"—", was:"", phone:"", notes:"Reserved code for payers without a member code."}];
+}
+var members, chanda;
+try{
+  members = JSON.parse(localStorage.getItem(K_MEM)||"null") || defaultMembers();
+  chanda = JSON.parse(localStorage.getItem(K_CHA)||"[]");
+}catch(e){ members=defaultMembers(); chanda=[]; }
+
+function save(){ try{ localStorage.setItem(K_MEM,JSON.stringify(members)); localStorage.setItem(K_CHA,JSON.stringify(chanda)); }catch(e){ toast('Storage full — export backup',true);} }
+function toast(msg,err){ var t=document.getElementById('toast'); t.textContent=msg; t.className='toast'+(err?' err':'')+' show'; setTimeout(function(){t.className='toast';},2800); }
+function fmt(n){ return "RM " + (Number(n)||0).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function findMember(code){ code=String(code).trim(); for(var i=0;i<members.length;i++){ if(String(members[i].code)===code) return members[i]; } return null; }
+function payBadge(p){ return p==='Cash'?'b-cash':p==='Online Transfer'?'b-online':'b-cheque'; }
+function $(id){ return document.getElementById(id); }
+
+document.getElementById('saveState').textContent = 'Ready · data saved on this device';
+
+/* ================= TABS ================= */
+var navBtns = document.querySelectorAll('#nav button');
+for(var i=0;i<navBtns.length;i++){ (function(b){
+  b.addEventListener('click',function(){
+    for(var j=0;j<navBtns.length;j++) navBtns[j].classList.remove('active');
+    var tabs=document.querySelectorAll('.tab');
+    for(var j=0;j<tabs.length;j++) tabs[j].classList.remove('active');
+    b.classList.add('active');
+    document.getElementById('tab-'+b.dataset.tab).classList.add('active');
+    if(b.dataset.tab==='dashboard') renderDashboard();
+    if(b.dataset.tab==='members') renderMembers();
+    if(b.dataset.tab==='search'){ populateYearDropdown(); runSearch(); }
+  });
+})(navBtns[i]); }
+
+/* ================= REGISTER MEMBER ================= */
+$('memberForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var code=$('m_code').value.trim();
+  if(!/^\d+$/.test(code)){ toast('Member code must be numbers only',true); return; }
+  if(findMember(code)){ toast('Code '+code+' already registered',true); return; }
+  members.push({code:code, name:$('m_name').value.trim(), branch:$('m_branch').value.trim(),
+    cat:$('m_cat').value, was:$('m_was').value.trim(), phone:$('m_phone').value.trim(), notes:$('m_notes').value.trim()});
+  save(); toast('Member registered: '+$('m_name').value.trim());
+  this.reset();
+});
+
+/* ================= MEMBERS LIST ================= */
+window.delMember = function(code){
+  if(!confirm('Delete member '+code+'? Their receipts remain.')) return;
+  members=members.filter(function(m){return String(m.code)!==String(code);});
+  save(); renderMembers(); toast('Member deleted');
+};
+function renderMembers(){
+  var q=$('memSearch').value.toLowerCase();
+  var filtered=members.filter(function(m){ return !q || (m.name+m.code+m.branch+m.cat).toLowerCase().indexOf(q)>=0; });
+  if(!filtered.length){ $('memberList').innerHTML='<div class="empty"><div class="big">&#128100;</div>No members found.</div>'; return; }
+  $('memberList').innerHTML=filtered.map(function(m){
+    var paid=chanda.filter(function(c){return String(c.code)===String(m.code);}).reduce(function(s,c){return s+(c.total||0);},0);
+    var is999=m.code==='999';
+    return '<div class="member-card"><div><div class="nm">'+esc(m.name)+(is999?' <span class="badge b-cheque">reserved 999</span>':'')+'</div>'+
+      '<div class="det">Code: <b>'+esc(m.code)+'</b> · Branch: '+esc(m.branch)+' · '+esc(m.cat)+' · Wassiyat: '+esc(m.was||'—')+' · Total paid: <b>'+fmt(paid)+'</b></div></div>'+
+      '<div class="no-print">'+(is999?'':'<button class="btn btn-danger btn-sm" onclick="delMember(\''+esc(m.code)+'\')">Delete</button>')+'</div></div>';
+  }).join('');
+}
+$('memSearch').addEventListener('input',renderMembers);
+
+/* ================= ENTER CHANDA ================= */
+$('monthChips').innerHTML=MONTHS.map(function(m){return '<label><input type="checkbox" name="month" value="'+m+'"><span>'+m+'</span></label>';}).join('');
+$('fundInputs').innerHTML=FUND_TYPES.map(function(f,i){return '<div class="fund-row"><span>'+f+'</span><input type="number" step="0.01" min="0" class="fund-amt" data-fund="'+i+'" placeholder="0.00"></div>';}).join('');
+
+var now=new Date();
+$('c_date').value=now.toISOString().slice(0,10);
+$('c_year').value=now.getFullYear();
+var lastRcpt=localStorage.getItem(K_RCPT);
+if(lastRcpt) $('c_rcpt').value=String(Number(lastRcpt)+1).padStart(5,'0');
+
+$('c_code').addEventListener('blur',lookupCode);
+$('c_code').addEventListener('input',function(){ $('codeHint').textContent='Use 999 if no code yet'; $('codeHint').style.color=''; });
+
+function lookupCode(){
+  var code=$('c_code').value.trim();
+  var wrap=$('c_name_override_wrap');
+  if(!code){ resetLookup(); return; }
+  if(code==='999'){
+    $('c_name').value='NON-MEMBER — enter real name below';
+    $('c_branch').value=''; $('c_cat').value='—';
+    wrap.style.display='block'; $('c_name_override').required=true;
+    $('codeHint').textContent='Code 999: please type the real payer name below';
+    $('codeHint').style.color='#b42318'; return;
+  }
+  wrap.style.display='none'; $('c_name_override').required=false; $('c_name_override').value='';
+  var m=findMember(code);
+  if(m){
+    $('c_name').value=m.name; $('c_branch').value=m.branch; $('c_cat').value=m.cat;
+    $('c_was').value=m.was||'';
+    $('codeHint').textContent='Found: '+m.name; $('codeHint').style.color='#067647';
+  }else{
+    resetLookup();
+    $('codeHint').textContent='NOT REGISTERED — register first, or use 999';
+    $('codeHint').style.color='#b42318';
+  }
+}
+function resetLookup(){ ['c_name','c_branch','c_cat','c_was'].forEach(function(id){$(id).value='';}); }
+
+function updateTotal(){
+  var t=0; document.querySelectorAll('.fund-amt').forEach(function(i){t+=Number(i.value)||0;});
+  $('c_total').textContent=fmt(t);
+  $('payMethodEcho').textContent=$('c_pay').value||'';
+}
+document.querySelectorAll('.fund-amt').forEach(function(i){i.addEventListener('input',updateTotal);});
+$('c_pay').addEventListener('change',updateTotal);
+
+$('chandaForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var code=$('c_code').value.trim();
+  if(code!=='999' && !findMember(code)){ toast('Member not registered — register first or use 999',true); return; }
+  var months=[]; document.querySelectorAll('input[name=month]:checked').forEach(function(i){months.push(i.value);});
+  if(!months.length){ toast('Tick at least one month',true); return; }
+  var amounts={}, total=0;
+  document.querySelectorAll('.fund-amt').forEach(function(i){ var v=Number(i.value)||0; amounts[FUND_TYPES[i.dataset.fund]]=v; total+=v; });
+  if(total<=0){ toast('Enter at least one amount',true); return; }
+  var name = code==='999' ? $('c_name_override').value.trim() : (findMember(code)?findMember(code).name:'');
+  if(code==='999' && !name){ toast('Enter the real payer name for code 999',true); return; }
+  var rec={id:Date.now(), rcpt:$('c_rcpt').value.trim(), date:$('c_date').value,
+    year:Number($('c_year').value), code:code, name:name, branch:findMember(code)?findMember(code).branch:'',
+    cat:findMember(code)?findMember(code).cat:'', was:$('c_was').value.trim(), months:months, amounts:amounts, total:total,
+    pay:$('c_pay').value, by:$('c_by').value.trim(), rem:$('c_rem').value.trim()};
+  chanda.push(rec); save();
+  var num=rec.rcpt.replace(/^0+/,'')||'0';
+  localStorage.setItem(K_RCPT, num);
+  toast('Receipt '+rec.rcpt+' saved — '+fmt(total));
+  this.reset();
+  $('c_date').value=new Date().toISOString().slice(0,10);
+  $('c_year').value=new Date().getFullYear();
+  $('c_rcpt').value=String(Number(num)+1).padStart(5,'0');
+  resetLookup(); $('c_name_override_wrap').style.display='none'; updateTotal();
+  populateYearDropdown();
+});
+$('resetChanda').addEventListener('click',function(){
+  $('chandaForm').reset(); resetLookup(); $('c_name_override_wrap').style.display='none'; updateTotal();
+  $('c_date').value=new Date().toISOString().slice(0,10); $('c_year').value=new Date().getFullYear();
+});
+
+/* ================= DASHBOARD ================= */
+function renderDashboard(){
+  var total=chanda.reduce(function(s,c){return s+c.total;},0);
+  var byYear={}; chanda.forEach(function(c){byYear[c.year]=(byYear[c.year]||0)+c.total;});
+  var thisYear=byYear[new Date().getFullYear()]||0;
+  var cash=chanda.filter(function(c){return c.pay==='Cash';}).reduce(function(s,c){return s+c.total;},0);
+  var online=chanda.filter(function(c){return c.pay==='Online Transfer';}).reduce(function(s,c){return s+c.total;},0);
+  var cheque=chanda.filter(function(c){return c.pay==='Cheque';}).reduce(function(s,c){return s+c.total;},0);
+  var stats=[
+    {k:'Total Collected',v:fmt(total),sub:chanda.length+' receipts'},
+    {k:'This Year ('+new Date().getFullYear()+')',v:fmt(thisYear),sub:Object.keys(byYear).length+' year(s) on record'},
+    {k:'Registered Members',v:String(members.length),sub:'incl. code 999'},
+    {k:'Cash',v:fmt(cash),sub:'payment method'},
+    {k:'Online Transfer',v:fmt(online),sub:'payment method'},
+    {k:'Cheque',v:fmt(cheque),sub:'payment method'},
+  ];
+  $('statGrid').innerHTML=stats.map(function(s){return '<div class="stat"><div class="k">'+s.k+'</div><div class="v">'+s.v+'</div><div class="sub">'+s.sub+'</div></div>';}).join('');
+
+  var byFund={}; FUND_TYPES.forEach(function(f){byFund[f]=0;}); chanda.forEach(function(c){FUND_TYPES.forEach(function(f){byFund[f]+=c.amounts[f]||0;});});
+  var maxF=Math.max.apply(null,Object.values(byFund).concat([1]));
+  $('fundBars').innerHTML=FUND_TYPES.map(function(f){
+    var pct=Math.max(4,byFund[f]/maxF*100);
+    return '<div class="bar-row"><div class="name">'+f+'</div><div class="track"><div class="fill" style="width:'+pct+'%">'+(byFund[f]?byFund[f].toLocaleString():'')+'</div></div><div class="amt">'+fmt(byFund[f])+'</div></div>';
+  }).join('') || '<div class="empty">No data yet — click "Load Sample Data" above.</div>';
+
+  var byMonth={}; MONTHS.forEach(function(m){byMonth[m]=0;}); chanda.forEach(function(c){c.months.forEach(function(m){byMonth[m]+=c.total/c.months.length;});});
+  var maxM=Math.max.apply(null,Object.values(byMonth).concat([1]));
+  $('monthBars').innerHTML=MONTHS.map(function(m){
+    var pct=Math.max(4,byMonth[m]/maxM*100);
+    return '<div class="bar-row"><div class="name">'+m+'</div><div class="track"><div class="fill" style="width:'+pct+'%">'+(byMonth[m]?byMonth[m].toFixed(0):'')+'</div></div><div class="amt">'+fmt(byMonth[m])+'</div></div>';
+  }).join('');
+
+  var recent=chanda.slice().sort(function(a,b){return b.id-a.id;}).slice(0,8);
+  $('recentBody').innerHTML=recent.length?recent.map(function(c){
+    return '<tr><td>'+esc(c.rcpt)+'</td><td>'+c.date+'</td><td>'+esc(c.name)+'</td><td><span class="badge '+payBadge(c.pay)+'">'+c.pay+'</span></td><td><b>'+fmt(c.total)+'</b></td></tr>';
+  }).join(''):'<tr><td colspan="5" style="text-align:center;color:#999;padding:24px">No receipts yet.</td></tr>';
+
+  $('demoActions').style.display = chanda.length ? 'none' : 'flex';
+}
+
+/* ================= SAMPLE DATA ================= */
+$('loadDemo').addEventListener('click',function(){
+  if(chanda.length){ toast('Erase existing data first (Backup tab) to load sample',true); return; }
+  members = defaultMembers().concat([
+    {code:"4361", name:"Safeer Ahmad", branch:"Kelang", cat:"Khuddam (14-40)", was:"", phone:"", notes:""},
+    {code:"4362", name:"Aiman Hakim", branch:"Gombak", cat:"Khuddam (14-40)", was:"W-102", phone:"", notes:""},
+    {code:"5120", name:"Hafizuddin bin Rosli", branch:"Kelang", cat:"Atfal (5-14)", was:"", phone:"", notes:""},
+    {code:"5121", name:"Umar Faruq", branch:"Petaling Jaya", cat:"Atfal (5-14)", was:"", phone:"", notes:""},
+  ]);
+  var demo=[
+    {rcpt:"08660", date:"2026-11-03", year:2026, code:"4361", months:["NOV"], amounts:{"Khuddam Membership":30,"Khuddam Hall":0,"Ijtima Tanzeem":40,"Atfal Membership":0,"Local Fund":20,"Khidmat-e-Khalaq":0}, total:90, pay:"Cash"},
+    {rcpt:"08661", date:"2026-11-05", year:2026, code:"4362", months:["NOV"], amounts:{"Khuddam Membership":30,"Khuddam Hall":50,"Ijtima Tanzeem":0,"Atfal Membership":0,"Local Fund":15,"Khidmat-e-Khalaq":10}, total:105, pay:"Online Transfer"},
+    {rcpt:"08662", date:"2026-11-10", year:2026, code:"5120", months:["NOV"], amounts:{"Khuddam Membership":0,"Khuddam Hall":0,"Ijtima Tanzeem":0,"Atfal Membership":15,"Local Fund":10,"Khidmat-e-Khalaq":0}, total:25, pay:"Cash"},
+    {rcpt:"08663", date:"2026-10-28", year:2026, code:"999", name:"Guest donor (Kuala Lumpur)", branch:"(any)", months:["OCT"], amounts:{"Khuddam Membership":0,"Khuddam Hall":0,"Ijtima Tanzeem":0,"Atfal Membership":0,"Local Fund":100,"Khidmat-e-Khalaq":50}, total:150, pay:"Online Transfer"},
+    {rcpt:"08664", date:"2026-11-12", year:2026, code:"5121", months:["NOV","DEC"], amounts:{"Khuddam Membership":0,"Khuddam Hall":0,"Ijtima Tanzeem":0,"Atfal Membership":30,"Local Fund":20,"Khidmat-e-Khalaq":0}, total:50, pay:"Cheque"},
+  ];
+  demo.forEach(function(d,i){
+    chanda.push({id:Date.now()+i, rcpt:d.rcpt, date:d.date, year:d.year, code:d.code,
+      name:d.name||(findMember(d.code)?findMember(d.code).name:''), branch:d.branch||(findMember(d.code)?findMember(d.code).branch:''),
+      cat:findMember(d.code)?findMember(d.code).cat:'', was:'', months:d.months, amounts:d.amounts, total:d.total, pay:d.pay, by:'demo', rem:''});
+  });
+  save(); renderDashboard(); toast('Sample data loaded — explore, then erase in Backup tab');
+});
+
+/* ================= SEARCH ================= */
+function populateYearDropdown(){
+  var years=[]; chanda.forEach(function(c){if(years.indexOf(c.year)<0)years.push(c.year);}); years.sort(function(a,b){return b-a;});
+  $('s_year').innerHTML='<option value="">All</option>'+years.map(function(y){return '<option>'+y+'</option>';}).join('');
+}
+$('s_month').innerHTML='<option value="">All</option>'+MONTHS.map(function(m){return '<option>'+m+'</option>';}).join('');
+
+var _searchResults=[];
+window.delReceipt=function(id){ if(!confirm('Delete this receipt?'))return; chanda=chanda.filter(function(c){return c.id!==id;}); save(); runSearch(); renderDashboard(); toast('Receipt deleted'); };
+
+function runSearch(){
+  var q=$('s_q').value.toLowerCase(), mon=$('s_month').value, yr=$('s_year').value,
+      pay=$('s_pay').value, from=$('s_from').value, to=$('s_to').value;
+  _searchResults=chanda.filter(function(c){
+    if(q && (c.name+c.code+c.branch+c.rcpt).toLowerCase().indexOf(q)<0) return false;
+    if(mon && c.months.indexOf(mon)<0) return false;
+    if(yr && String(c.year)!==yr) return false;
+    if(pay && c.pay!==pay) return false;
+    if(from && c.date<from) return false;
+    if(to && c.date>to) return false;
+    return true;
+  }).sort(function(a,b){return b.id-a.id;});
+  var tot=_searchResults.reduce(function(s,c){return s+c.total;},0);
+  $('s_count').textContent=_searchResults.length+' receipts · '+fmt(tot);
+  $('s_body').innerHTML=_searchResults.length?_searchResults.map(function(c){
+    var funds=FUND_TYPES.filter(function(f){return c.amounts[f];}).map(function(f){return f+':'+c.amounts[f];}).join(' · ');
+    return '<tr><td>'+esc(c.rcpt)+'</td><td>'+c.date+'</td><td>'+c.months.join(',')+'</td><td>'+c.year+'</td>'+
+      '<td>'+esc(c.code)+'</td><td>'+esc(c.name)+'</td><td>'+esc(c.branch)+'</td>'+
+      '<td style="font-size:11px">'+funds+'</td><td><b>'+fmt(c.total)+'</b></td>'+
+      '<td><span class="badge '+payBadge(c.pay)+'">'+c.pay+'</span></td>'+
+      '<td class="no-print"><button class="btn btn-danger btn-sm" onclick="delReceipt('+c.id+')">Del</button></td></tr>';
+  }).join(''):'<tr><td colspan="11" style="text-align:center;color:#999;padding:24px">No matching receipts.</td></tr>';
+}
+$('s_run').addEventListener('click',runSearch);
+$('s_clear').addEventListener('click',function(){ ['s_q','s_from','s_to'].forEach(function(id){$(id).value='';}); ['s_month','s_year','s_pay'].forEach(function(id){$(id).value='';}); runSearch(); });
+$('s_csv').addEventListener('click',function(){ exportCSV(_searchResults,'chanda_search_results.csv'); });
+
+/* ================= STATEMENT (fixed: no inline JSON) ================= */
+var _statementRecs=[];
+$('st_run').addEventListener('click',function(){
+  var code=$('st_code').value.trim();
+  var yr=$('st_year').value;
+  if(!code){ toast('Enter a member code',true); return; }
+  var recs=chanda.filter(function(c){return String(c.code)===code;});
+  if(yr) recs=recs.filter(function(c){return String(c.year)===yr;});
+  _statementRecs=recs;
+  var m=findMember(code);
+  var name=code==='999'?'(non-members — all 999 entries)':(m?m.name:'Unknown member');
+  var total=recs.reduce(function(s,c){return s+c.total;},0);
+  var byFund={}; FUND_TYPES.forEach(function(f){byFund[f]=0;}); recs.forEach(function(c){FUND_TYPES.forEach(function(f){byFund[f]+=c.amounts[f]||0;});});
+  var byMonth={}; MONTHS.forEach(function(mo){byMonth[mo]=0;}); recs.forEach(function(c){c.months.forEach(function(mo){byMonth[mo]+=c.total/c.months.length;});});
+  var html='<div class="member-card"><div><div class="nm">'+esc(name)+' — Code '+esc(code)+'</div>'+
+    '<div class="det">Branch: '+esc(m?m.branch:'—')+' · Category: '+esc(m?m.cat:'—')+' · Period: '+(yr||'All years')+' · Receipts: '+recs.length+'</div></div>'+
+    '<div><div style="font-size:11px;color:#666">TOTAL PAID</div><div style="font-size:24px;font-weight:800;color:var(--primary)">'+fmt(total)+'</div></div></div>';
+  html+='<div class="grid g2"><div class="card" style="margin:0"><h2>By Fund Type</h2>'+
+    FUND_TYPES.filter(function(f){return byFund[f]>0;}).map(function(f){return '<div class="bar-row"><div class="name">'+f+'</div><div class="amt">'+fmt(byFund[f])+'</div></div>';}).join('')+'</div>';
+  html+='<div class="card" style="margin:0"><h2>By Month</h2>'+
+    MONTHS.filter(function(mo){return byMonth[mo]>0;}).map(function(mo){return '<div class="bar-row"><div class="name">'+mo+'</div><div class="amt">'+fmt(byMonth[mo])+'</div></div>';}).join('')+'</div></div>';
+  html+='<div class="card" style="margin-top:16px"><h2>Receipt Detail</h2><div class="table-wrap"><table><thead><tr><th>Receipt</th><th>Date</th><th>Month(s)</th><th>Year</th><th>Funds</th><th>Method</th><th>Total</th></tr></thead><tbody>'+
+    recs.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).map(function(c){
+      var funds=FUND_TYPES.filter(function(f){return c.amounts[f];}).map(function(f){return f+': '+c.amounts[f];}).join(' · ');
+      return '<tr><td>'+esc(c.rcpt)+'</td><td>'+c.date+'</td><td>'+c.months.join(',')+'</td><td>'+c.year+'</td>'+
+        '<td style="font-size:11px">'+funds+'</td><td><span class="badge '+payBadge(c.pay)+'">'+c.pay+'</span></td><td><b>'+fmt(c.total)+'</b></td></tr>';
+    }).join('')+'</tbody></table></div></div>';
+  html+='<div class="actions no-print"><button class="btn btn-accent" onclick="window.print()">Print / Save as PDF</button>'+
+    '<button class="btn btn-outline" id="st_csv">Export Statement to CSV</button></div>';
+  $('st_result').innerHTML=html;
+  var btn=$('st_csv'); if(btn) btn.addEventListener('click',function(){ exportCSV(_statementRecs,'statement_'+code+'.csv'); });
+});
+
+/* ================= CSV EXPORT ================= */
+function exportCSV(rows,filename){
+  if(!rows.length){ toast('No data to export',true); return; }
+  var header=['Receipt No','Date','Month(s)','Year','Member Code','Name','Branch','Category','Wassiyat No'].concat(FUND_TYPES).concat(['Total (RM)','Payment Method','Entered By','Remarks']);
+  var lines=[header.join(',')];
+  rows.forEach(function(c){
+    var row=[c.rcpt,c.date,c.months.join('+'),c.year,c.code,'"'+(c.name||'').replace(/"/g,'""')+'"','"'+(c.branch||'').replace(/"/g,'""')+'"',c.cat||'',c.was||''];
+    FUND_TYPES.forEach(function(f){row.push(c.amounts[f]||0);});
+    row.push(c.total,c.pay,c.by||'',(c.rem||'').replace(/"/g,'""'));
+    lines.push(row.join(','));
+  });
+  var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  toast('CSV exported: '+filename);
+}
+
+/* ================= BACKUP ================= */
+$('bk_export').addEventListener('click',function(){
+  var blob=new Blob([JSON.stringify({members:members,chanda:chanda,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='chanda_backup_'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  toast('Backup downloaded — keep it safe');
+});
+$('bk_csv_all').addEventListener('click',function(){ exportCSV(chanda,'chanda_all_receipts.csv'); });
+$('bk_import').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){ try{ var d=JSON.parse(r.result); if(!d.members||!d.chanda) throw new Error('bad');
+    if(confirm('Import '+d.members.length+' members and '+d.chanda.length+' receipts? This REPLACES current data.')){
+      members=d.members; chanda=d.chanda; save(); toast('Import successful'); renderDashboard(); populateYearDropdown();
+    }}catch(err){ toast('Invalid backup file',true); } };
+  r.readAsText(f);
+});
+$('bk_clear').addEventListener('click',function(){
+  if(confirm('ERASE ALL DATA? Export a backup first! This cannot be undone.')){
+    if(confirm('Really erase everything?')){
+      localStorage.removeItem(K_MEM); localStorage.removeItem(K_CHA); localStorage.removeItem(K_RCPT);
+      members=defaultMembers(); chanda=[]; save(); toast('All data erased'); renderDashboard(); populateYearDropdown();
+    }
+  }
+});
+
+/* init */
+populateYearDropdown();
+renderDashboard();
+})();
+</script>
+</body>
+</html>
